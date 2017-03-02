@@ -2,7 +2,18 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
-var http = require('http');
+var http = require('https');
+
+//Adding native function
+Array.prototype.clean = function(deleteValue) {
+  for (var i = 0; i < this.length; i++) {
+    if (this[i] === deleteValue) {         
+      this.splice(i, 1);
+      i--;
+    }
+  }
+  return this;
+};
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -68,7 +79,9 @@ exports.addUrlToList = function(url, callback) {
     // console.log('///SITES WITHIN URL:', sites);
     sites.push(url);
     //Split the results by newline
+
     var results = sites.join('\n');
+    console.log('......///', results);
     // console.log('****/// sites within;', sites);
     fs.writeFile(exports.paths.list, results, callback);
     // console.log('///Within addToUrl exports list*** is:', exports.path.list);
