@@ -12,24 +12,35 @@ exports.handleRequest = function (req, res) {
     res.end();
   } else if (req.method === 'POST') {
     // Get data from input on client
+    console.log('///In POST');
     req.on('data', function(data) {
-      console.log('///..data:', data.toString());
+      console.log('///..data:', data.toString().slice(4));
+      // Grab URL
+      var targetUrl = data.toString().slice(4);
+      // If isURLArchived
+      archive.isUrlArchived(targetUrl, function(result) {
+        console.log('WITHIN URL ARCHIVED FUNC');
+        if (result) {
+          console.log('WITHIN PASSED');
+        // redirect to archived site
+          res.redirect(archive.paths.archivedSites + '/' + targetUrl);
+        } else {
+          console.log('WITHIN ELSE');
+      // Else !isURLArchived
+        // redirect to loading html
+          // addURLtoList
+          archive.addUrlToList(targetUrl, function() {
+            res.writeHead(301, {
+              'Location': archive.paths.loading
+            });
+            res.end();
+          });
+          // res.redirect(archive.paths.loading
+        }
+      });
 
-      // Read in sites.txt
 
-        // Get the object
-
-      // If it's already in the object
-        // If it's 'loaded'
-          // Auto-redirect user to archived version
-        // else (it's 'unloaded')
-          // Auto-redirect to loading.html
-      // Else (it's not in the object)
-        // Append it to the object
-        // Write the object back to sites.txt
-    });
-
-    // {"facebook.com":"loaded", "google.com":"unloaded", "soundcloud.com":"unloaded"}
+    });    
   }
   fs.readFile(archive.paths.index, function(err, data) {
     res.end(data);
