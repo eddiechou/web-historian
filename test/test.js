@@ -111,7 +111,8 @@ describe('archive helpers', function() {
 
   describe('#addUrlToList', function () {
     it('should add a url to the list', function (done) {
-      var urlArray = ['example1.com', 'example2.com\n'];
+      //Took out a \n at the end of urlArray
+      var urlArray = ['example1.com', 'example2.com'];
       fs.writeFileSync(archive.paths.list, urlArray.join('\n'));
 
       archive.addUrlToList('someurl.com', function () {
