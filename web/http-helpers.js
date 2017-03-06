@@ -1,6 +1,7 @@
 var path = require('path');
 var fs = require('fs');
 var archive = require('../helpers/archive-helpers');
+var Promise = require('bluebird');
 
 exports.headers = {
   'access-control-allow-origin': '*',
@@ -30,6 +31,30 @@ exports.serveAssets = function(res, asset, callback) {
   });
 };
 
+// Promise version of serveAssets
+var readFile = Promise.promisify(fs.readFile);
+
+exports.serveAssetsQ1 = function(res, asset, callback) {
+  var encoding = {encoding: 'utf8'};
+  // readFile returns a promise
+  return readFile(archive.paths.siteAssets + asset, encoding)
+    .then(function(contents) {
+      contents && exports.sendResponse(res, contents);
+    })
+    .catch(function(err) {
+      // file doesn't exist in public!
+      return readFile(archive.paths.archivedSites + asset, encoding);
+    })
+    .then(function(contents) {
+      contents && exports.sendResponse(res, contents);
+    })
+    .catch(function(err) {
+      // file doesn't exist in archive!
+      callback ? callback() : exports.send404(res);
+    });
+};
+
+exports.serveAssets = exports.serveAssetsQ1;
 
 
 // As you progress, keep thinking about what helper functions you can put here!

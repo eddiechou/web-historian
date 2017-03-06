@@ -2,9 +2,9 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
-var http = require('https');
-var urlParse = require('url');
 var request = require('request');
+
+var Promise = require('bluebird');
 
 //Adding native function
 Array.prototype.clean = function(deleteValue) {
@@ -86,35 +86,63 @@ exports.downloadUrls = function(urls) {
 };
 
 
+/* Todo: Promises Versions of the methods */
+
+var readFile = Promise.promisify(fs.readFile);
+var appendFile = Promise.promisify(fs.appendFile);
+var exists = Promise.promisify(fs.exists);
+
+exports.readListOfUrlsQ1 = function(callback) {
+  return readFile(exports.paths.list)
+    .then(function(sites) {
+      var wholeString = data.toString();
+      var sites = wholeString.split('\n');
+      (sites);
+    })
+    .catch(function(err) {
+      // file doesn't exist in archive!
+      callback ? callback() : exports.send404(res);
+    });
+};
+
+exports.isUrlInListQ1 = function(url, callback) {
+  return exports.readListOfUrls()
+    .then(function(sites) {
+      var found = _.any(sites, function(site, i) {
+        return site.match(url);
+      });
+      resolve(found);
+    });
+};
+
+// Should append as strings with \n
+exports.addUrlToListQ1 = function(url, callback) {
+  return appendFile(exports.paths.list, url + '\n')
+    .then(function(result) {
+      callback(result);
+    });
+};
+
+exports.isUrlArchivedQ1 = function(url, callback) {
+  // Check if fie with url as name exists in archivedSites
+  var testUrl = exports.paths.archivedSites + '/' + url;
+  return exists(testUrl)
+    .then(function(result) {
+      callback(result);
+    });
+};
+
+exports.downloadUrlsQ1 = function(urls) {
+  // For each URL in urls
+  urls.forEach(function(url) {
+    if (!url) { return; }
+    request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
+  });
+};
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// exports.readListOfUrls = exports.readListOfUrlsQ1;
+// exports.isUrlInList = exports.isUrlInListQ1;
+// exports.addUrlToList = exports.addUrlToListQ1;
+// exports.isUrlArchived = exports.isUrlArchivedQ1;
+// exports.downloadUrls = exports.downloadUrlsQ1;
